@@ -1,0 +1,90 @@
+To pull Amazon linux base image from public registery
+-----------------------------------------------------
+log-in 
+1. On WIndows (https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html  , https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
+	setx AWS_PROFILE=profilename 
+	On linux
+	export AWS_PROFILE=user1
+2. aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws  (https://docs.aws.amazon.com/AmazonECR/latest/userguide/amazon_linux_container_image.html)
+	Login succeeded
+3. docker pull public.ecr.aws/amazonlinux/amazonlinux:latest
+4. docker image tag public.ecr.aws/amazonlinux/amazonlinux:latest mooks/amazonlinux:latest   -- rename docker repository/name   
+
+
+push image to ECR (private registery)
+----------------------------------------
+Once base-imae is ready with testing
+
+1. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 173295848793.dkr.ecr.us-east-1.amazonaws.com   ---- authenticate the Docker CLI to your default registry
+2. aws ecr create-repository --repository-name mooks/amazonlinux --image-scanning-configuration scanOnPush=true --region us-east-1     ---- Create a repository
+
+3. docker images
+4. docker tag mooks/amazonlinux:latest 173295848793.dkr.ecr.us-east-1.amazonaws.com/mooks/amazonlinux:latest
+5. docker push 173295848793.dkr.ecr.us-east-1.amazonaws.com/mooks/amazonlinux:latest      ---- Push an image to Amazon ECR
+
+Pull an image from Amazon ECR
+-----------------------------
+docker pull 700684925287.dkr.ecr.us-east-1.amazonaws.com/mooks/amazonlinux:latest
+
+
+Delete Base IMAGE
+-------------------
+aws ecr batch-delete-image --repository-name mooks/amazonlinux --image-ids imageTag=latest
+
+
+Delete REPOSITORY
+-------------------
+aws ecr delete-repository --repository-name mooks/amazonlinux --force
+
+
+docker build -t amazonlinux-aspnetcore-runtime-2117-cuda-11 .
+docker build -t amazonlinux-aspnetcore-runtime-509-cuda-11 .
+
+
+repository URI
+-----------------
+700684925287.dkr.ecr.us-east-1.amazonaws.com/mooks/amazonlinux
+
+rename docker repository/name
+----------------------------
+https://stackoverflow.com/questions/25211198/docker-how-to-change-repository-name-or-rename-image
+Ex.
+
+From (server to myname/server)
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+server              latest              d583c3ac45fd        26 minutes ago      685.5 MB
+
+To
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+myname/server       latest              d583c3ac45fd        26 minutes ago      685.5 MB
+
+
+docker image tag server:latest myname/server:latest
+or
+docker image tag d583c3ac45fd myname/server:latest
+
+
+docker rmi server  -- That will just remove the alias/tag
+
+
+
+
+
+http_proxy, no_proxy for docker
+-------------------------------
+https://aws.amazon.com/premiumsupport/knowledge-center/http-proxy-docker-ecs/
+
+
+
+Issues - during upload
+----------------------
+
+docker push 173295848793.dkr.ecr.us-east-1.amazonaws.com/mooks/amazonlinux:latest
+The push refers to repository [173295848793.dkr.ecr.us-east-1.amazonaws.com/mooks/amazonlinux]
+6404f374ee85: Preparing
+denied: User: arn:aws:iam::700684925287:user/Administrator is not authorized to perform: ecr:InitiateLayerUpload on resource: arn:aws:ecr:us-east-1:173295848793:repository/mooks/amazonlinux
+
+
+Solution:
+after creating new user(dev) with AmazonEC2ContainerRegistryFullAccess permission. push worked with the dev user session
+

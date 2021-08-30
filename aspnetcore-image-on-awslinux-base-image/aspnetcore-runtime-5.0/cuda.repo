@@ -1,0 +1,6 @@
+[cuda]
+name=cuda
+baseurl=https-//developer download nvidia com/compute/r1]dairepos/rhe17/x86 64
+enabled=1
+gpgcheck=1
+gpgkey=file-///ete/pki/rpm-gpg/RPM-GPG-KEY-NVIDTA

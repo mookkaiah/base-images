@@ -1,0 +1,32 @@
+To build 2.1.17 version
+------------------------
+docker build -t amazonlinux-aspnetcore-runtime-2117-cuda-11 .
+
+To build 5.0 version
+---------------------
+docker build -t amazonlinux-aspnetcore-runtime-509-cuda-11 .
+
+
+client to reuse the image(Note: CourseApi.dll is already build and binaries copied)
+-------------------------
+
+FROM amazonlinux-aspnetcore-runtime-509-cuda-11 AS base
+WORKDIR /app
+
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://*:5000
+ENV ASPNETCORE_ENVIRONMENT = "Development"
+
+
+
+FROM base AS final 
+WORKDIR /app/publish
+COPY . /app/publish 
+ENTRYPOINT ["dotnet", "CourseApi.dll"]
+
+build and run
+-------------
+docker build -t course-api-509 .
+docker run -d -p 8085:5000 --name myapp-509 course-api-509
+
+http://localhost:8085/WeatherForecast
